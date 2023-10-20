@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY . ./
 RUN dotnet restore
-RUN dotnet publish -c Release -o /dist
-
+RUN dotnet publish -c Release -o dist
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build-env /app/dist .
+EXPOSE 5501
 
 ENTRYPOINT ["dotnet", "TryBets.Users.dll"]
