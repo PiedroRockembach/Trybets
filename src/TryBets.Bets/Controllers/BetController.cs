@@ -9,24 +9,30 @@ using TryBets.Bets.Services;
 
 
 namespace TryBets.Bets.Controllers;
-
 [Route("[controller]")]
 public class BetController : Controller
 {
     private readonly IBetRepository _repository;
-    private readonly IOddService _oddService;
-    public BetController(IBetRepository repository, IOddService oddService)
+    public BetController(IBetRepository repository)
     {
         _repository = repository;
-        _oddService = oddService;
     }
 
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Policy = "Client")]
-    public async Task<IActionResult> Post([FromBody] BetDTORequest request)
+    public IActionResult Post([FromBody] BetDTORequest request)
     {
-        throw new NotImplementedException();
+        try 
+        {
+            var token = HttpContext.User.Identity as ClaimsIdentity;
+            var email = token?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            return Created("", _repository.Post(request, email!));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new {message = ex.Message});
+        }
     }
 
     [HttpGet("{BetId}")]
@@ -34,6 +40,15 @@ public class BetController : Controller
     [Authorize(Policy = "Client")]
     public IActionResult Get(int BetId)
     {
-        throw new NotImplementedException();
+        try 
+        {
+            var token = HttpContext.User.Identity as ClaimsIdentity;
+            var email = token?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            return Ok(_repository.Get(BetId, email!));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
